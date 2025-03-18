@@ -20,4 +20,4 @@ ps:
 	docker-compose ps
 
 clean:
-	docker system prune -f
+	docker system prune -a

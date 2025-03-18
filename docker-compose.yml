@@ -13,15 +13,16 @@ services:
         ipv4_address: 172.24.0.22
         
   postgis:
-    image: postgis/postgis:16-3.4
+    #build: ./config/postgis
+    image: pgrouting/pgrouting:16-3.5-main
     container_name: postgis
     restart: always
     expose:
       - "5432"
     environment:
-      POSTGRES_DB: ensgdb
-      POSTGRES_USER: ensgadmin
-      POSTGRES_PASSWORD: ensgpassword
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       ALLOW_IP_RANGE: 0.0.0.0/0
       FORCE_SSL: "FALSE"
     volumes:
@@ -35,8 +36,8 @@ services:
     container_name: pgadmin
     restart: always
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@ensg.eu
-      PGADMIN_DEFAULT_PASSWORD: ensgpassword
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
     volumes:
       - pgadmin_data:/var/lib/pgadmin
     expose:
@@ -51,8 +52,8 @@ services:
     restart: always
     environment:
       - "CORS_ENABLED=true"
-      - GEOSERVER_ADMIN_PASSWORD=geoserver
-      - GEOSERVER_ADMIN_USER=admin
+      - GEOSERVER_ADMIN_PASSWORD=${GEOSERVER_ADMIN_PASSWORD}
+      - GEOSERVER_ADMIN_USER=${GEOSERVER_ADMIN_USER}
       - INITIAL_MEMORY=500M
       - MAXIMUM_MEMORY=1G
       - GEOSERVER_DATA_DIR=/opt/geoserver/data_dir
@@ -74,6 +75,51 @@ services:
       sdi_apps:
         ipv4_address: 172.24.0.11
 
+  filebrowser:
+    image: hurlenko/filebrowser
+    container_name: filebrowser
+    restart: always
+    expose:
+      - "8081"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - FB_BASEURL=/data
+    volumes:
+      - postgis_data:/data/postgis
+      - geoserver_data:/data/geoserver
+      - geoserver_styles:/data/geoserver/styles
+      - osm_data:/data/osm
+    networks:
+      sdi_apps:
+        ipv4_address: 172.24.0.21
+
+  homepage:
+    image: ghcr.io/benphelps/homepage:latest
+    container_name: ${COMPOSE_PROJECT_NAME}_homepage
+    restart: unless-stopped
+    expose:
+      - "3000"
+    volumes:
+      - ./config/homepage:/app/config
+      - homepage-public:/app/public
+    networks:
+      sdi_apps:
+        ipv4_address: 172.24.0.16
+'''
+  mviewer:
+    image: mviewer/mviewer
+    container_name: mviewer
+    restart: always
+    networks:
+      sdi_apps:
+        ipv4_address: 192.168.1.13
+    volumes:
+      - mviewer_config:/config
+      - mviewer_data:/var/www/html/data
+    ports:
+      - "9091"
+'''
 volumes: 
   portainer_data:
   postgis_data:
@@ -81,6 +127,11 @@ volumes:
   geoserver_data:
   geoserver_bal:
   geoserver_settings:
+  geoserver_styles:
+  osm_data:
+  homepage-public:
+  #mviewer_config:
+  #mviewer_data:
 
 networks:
   sdi_apps:

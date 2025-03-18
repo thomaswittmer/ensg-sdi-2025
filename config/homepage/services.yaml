@@ -1,0 +1,20 @@
+---
+# For configuration options and examples, please see:
+# https://gethomepage.dev/latest/configs/services
+
+- Services:
+    - Postgis:
+        href: http://172.24.0.10:5432
+        description: Homepage is awesome
+    - PgAdmin:
+        href: http://172.24.0.20:/browser
+        description: Homepage is awesome
+    - Portainer:
+        href: http://172.24.0.22:9000
+        description: Homepage is awesome
+    - Geoserver:
+        href: http://172.24.0.11:8080/geoserver
+        description: Homepage is awesome
+    - FileBrowser:
+        href: http://172.24.0.21:8080/data/files/
+        description: Homepage is awesome
