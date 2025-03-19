@@ -64,7 +64,7 @@ services:
       # Extensions set to be installed
       - "INSTALL_EXTENSIONS=true"
       - STABLE_EXTENSIONS=css-plugin,importer-plugin,wmts-multi-dimensional-plugin
-      - COMMUNITY_EXTENSIONS=backup-restore-plugin,ogcapi-plugin,smart-data-loader-plugin,wmts-styles-plugin
+      - COMMUNITY_EXTENSIONS=ogcapi-plugin,wmts-styles-plugin
     expose:
       - "8080"
     volumes:
@@ -106,20 +106,86 @@ services:
     networks:
       sdi_apps:
         ipv4_address: 172.24.0.16
-'''
+
   mviewer:
     image: mviewer/mviewer
     container_name: mviewer
     restart: always
     networks:
       sdi_apps:
-        ipv4_address: 192.168.1.13
+        ipv4_address: 172.24.0.17
     volumes:
       - mviewer_config:/config
       - mviewer_data:/var/www/html/data
     ports:
       - "9091"
-'''
+
+  mapstore2:
+    image: geosolutionsit/mapstore2
+    container_name: ${COMPOSE_PROJECT_NAME}_mapstore2
+    restart: always
+    depends_on:
+      - geoserver
+    expose:
+      - "8081"
+    environment:
+      GEOSERVER_URL: http://geoserver:8080/geoserver
+    networks:
+      sdi_apps:
+        ipv4_address: 172.24.0.14
+
+  elasticsearch:  
+    image: elasticsearch:7.8.1  
+    container_name: ${COMPOSE_PROJECT_NAME}_elasticsearch  
+    expose:  
+      - "9200"  
+    environment:  
+      discovery.type: 'single-node'  
+      xpack.security.enabled: 'true'  
+      ELASTIC_PASSWORD: 'ensgpassword'  
+    networks:  
+      sdi_apps:  
+        ipv4_address: 172.24.0.23
+
+  kibana:  
+    image: kibana:7.8.1  
+    container_name: ${COMPOSE_PROJECT_NAME}_kibana  
+    volumes:  
+      - ./config/kibana/kibana.yml:/usr/share/kibana/config/kibana.yml  
+    expose:  
+      - "5601"  
+    networks:  
+      sdi_apps:  
+        ipv4_address: 172.24.0.15
+
+  pg_tileserv:
+    image: pramsey/pg_tileserv
+    container_name: ${COMPOSE_PROJECT_NAME}_pg_tileserv
+    expose:
+      - "7800"
+    restart: always
+    depends_on:
+      - postgis
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgis:5432/ensgdb
+    networks:
+      sdi_apps:
+        ipv4_address: 172.24.0.24
+
+  tegola:
+    image: gospatial/tegola
+    container_name: ${COMPOSE_PROJECT_NAME}_tegola
+    restart: always
+    depends_on:
+      - pg_tileserv
+    expose:
+      - "9090"
+    volumes:
+      - ./config/tegola:/etc/tegola
+    networks:
+      sdi_apps:
+        ipv4_address: 172.24.0.25
+
 volumes: 
   portainer_data:
   postgis_data:
@@ -130,8 +196,8 @@ volumes:
   geoserver_styles:
   osm_data:
   homepage-public:
-  #mviewer_config:
-  #mviewer_data:
+  mviewer_config:
+  mviewer_data:
 
 networks:
   sdi_apps:

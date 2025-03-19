@@ -1,0 +1,27 @@
+[webserver]
+port = ":9090"
+
+[cache]
+type = "file"
+basepath = "/tmp/tegola_cache"
+
+[[providers]]
+name = "postgis"
+type = "postgres"
+host = "postgis"
+port = 5432
+database = "ensgdb"
+user = "ensgadmin"
+password = "ensgpassword"
+srid = 3857
+
+[[maps]]
+name = "saint_malo"
+
+[[maps.layers]]
+name = "roads"
+provider_layer = "public.saintmalo_roads"
+
+[[maps.layers]]
+name = "pois"
+provider_layer = "public.saintmalo_pois"

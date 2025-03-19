@@ -1,0 +1,29 @@
+{
+    "defaultBackgrounds": [
+      {
+        "type": "osm",
+        "title": "OpenStreetMap",
+        "source": {
+          "url": "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        },
+        "visibility": true
+      },
+      {
+        "type": "tile",
+        "title": "Saint-Malo Roads",
+        "source": {
+          "url": "http://localhost:7800/public.saint_malo_roads/{z}/{x}/{y}.pbf"
+        },
+        "visibility": true
+      },
+      {
+        "type": "tile",
+        "title": "Saint-Malo POIs",
+        "source": {
+          "url": "http://localhost:7800/public.saint_malo_pois/{z}/{x}/{y}.pbf"
+        },
+        "visibility": true
+      }
+    ],
+    "geoServerUrl": "http://geoserver:8080/geoserver"
+  }
